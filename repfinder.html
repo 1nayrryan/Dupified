@@ -182,6 +182,14 @@ function finishSearch(q) {
   document.getElementById("toolbar").style.display = "flex";
 }
 
+// ── Calculate average price ───────────────────────────
+function getAveragePrice(results) {
+  const pricesWithValues = results.filter(r => r.price && typeof r.price === 'number');
+  if (!pricesWithValues.length) return null;
+  const sum = pricesWithValues.reduce((acc, r) => acc + r.price, 0);
+  return Math.round(sum / pricesWithValues.length);
+}
+
 // ── Filters & Sort ────────────────────────────────────
 function buildPlatformFilters() {
   const platforms = [...new Set(allResults.map(r => r.platform))];
@@ -225,9 +233,16 @@ function renderCards(items) {
     return;
   }
 
+  // Calculate average price across all displayed results
+  const avgPrice = getAveragePrice(items);
+
   document.getElementById("results").innerHTML = items.map((item, i) => {
     const links = getDropdownLinks(item);
-    const priceHTML = item.price
+    
+    // Show average price for all items, or individual price if available
+    const priceHTML = avgPrice
+      ? `<span class="price-tag">avg ~$${avgPrice}</span>`
+      : item.price
       ? `<span class="price-tag">~$${item.price}</span>`
       : `<span class="price-tag no-price">Price unknown</span>`;
 
@@ -236,7 +251,7 @@ function renderCards(items) {
       : `<div class="thumb-placeholder">👟</div>`;
 
     return `
-      <div class="card" style="animation-delay:${i * 0.05}s">
+      <div class="card" data-card-index="${i}" onclick="toggleCardExpand(${i}, event)">
         <div class="card-main">
           <div class="card-thumb">${thumbHTML}</div>
           <div class="card-body">
@@ -247,26 +262,18 @@ function renderCards(items) {
             <div class="card-snippet">${item.snippet}</div>
             <div class="card-footer">
               <span class="platform-tag">${PLATFORM_ICONS[item.platform] || "🌐"} ${item.platform}</span>
-              <div class="dropdown-wrap" id="dd-wrap-${i}">
-                <button class="dropdown-btn" onclick="toggleDropdown(${i})">
-                  Links
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 12 15 18 9"/>
-                  </svg>
-                </button>
-                <div class="dropdown-menu" id="dd-${i}">
-                  ${links.map(l => `
-                    <a href="${l.url}" target="_blank" rel="noopener" class="dropdown-item">
-                      <div class="dropdown-item-icon">${l.icon}</div>
-                      <div>
-                        <div>${l.label}</div>
-                        <div class="dropdown-item-meta">${l.meta}</div>
-                      </div>
-                    </a>`).join("")}
-                </div>
-              </div>
             </div>
           </div>
+        </div>
+        <div class="card-links" id="card-links-${i}">
+          ${links.map(l => `
+            <a href="${l.url}" target="_blank" rel="noopener" class="link-item" onclick="event.stopPropagation()">
+              <div class="link-item-icon">${l.icon}</div>
+              <div>
+                <div class="link-item-label">${l.label}</div>
+                <div class="link-item-meta">${l.meta}</div>
+              </div>
+            </a>`).join("")}
         </div>
       </div>`;
   }).join("");
@@ -290,7 +297,40 @@ function getDropdownLinks(item) {
   return links;
 }
 
-// ── Helpers ───────────────────────────────────────────
+// ── Card Expand/Collapse ─────────────────────────────
+let expandedCardIndex = null;
+
+function toggleCardExpand(i, event) {
+  // Don't expand if clicking a link
+  if (event.target.closest('.link-item')) return;
+  
+  const card = document.querySelector(`[data-card-index="${i}"]`);
+  const isExpanded = card.classList.contains('expanded');
+  
+  // Close other expanded cards
+  if (expandedCardIndex !== null && expandedCardIndex !== i) {
+    const otherCard = document.querySelector(`[data-card-index="${expandedCardIndex}"]`);
+    if (otherCard) otherCard.classList.remove('expanded');
+  }
+  
+  // Toggle current card
+  if (isExpanded) {
+    card.classList.remove('expanded');
+    expandedCardIndex = null;
+  } else {
+    card.classList.add('expanded');
+    expandedCardIndex = i;
+  }
+}
+
+document.addEventListener("click", e => {
+  // Close expanded card when clicking outside
+  if (!e.target.closest(".card") && expandedCardIndex !== null) {
+    const expandedCard = document.querySelector(`[data-card-index="${expandedCardIndex}"]`);
+    if (expandedCard) expandedCard.classList.remove('expanded');
+    expandedCardIndex = null;
+  }
+});
 function getPlatform(url) {
   if (!url) return "Web";
   if (url.includes("dhgate")) return "DHgate";
@@ -308,19 +348,6 @@ function extractPrice(snippet) {
   const match = snippet.match(/\$(\d{1,3})(?:\.\d{2})?/);
   return match ? parseInt(match[1]) : null;
 }
-
-function toggleDropdown(i) {
-  document.querySelectorAll(".dropdown-menu").forEach((el, idx) => {
-    if (idx !== i) el.classList.remove("open");
-  });
-  document.getElementById(`dd-${i}`).classList.toggle("open");
-}
-
-document.addEventListener("click", e => {
-  if (!e.target.closest(".dropdown-wrap")) {
-    document.querySelectorAll(".dropdown-menu").forEach(el => el.classList.remove("open"));
-  }
-});
 
 document.getElementById("query").addEventListener("keydown", e => {
   if (e.key === "Enter") doSearch();

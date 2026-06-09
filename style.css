@@ -216,6 +216,7 @@
       transition: border-color 0.15s, box-shadow 0.15s;
       box-shadow: var(--shadow);
       animation: fadeUp 0.25s ease both;
+      cursor: pointer;
     }
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(8px); }
@@ -224,6 +225,10 @@
     .card:hover {
       border-color: var(--border-hover);
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .card.expanded {
+      border-color: var(--accent);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
     }
     .card-main {
       display: flex;
@@ -317,52 +322,33 @@
       font-family: 'DM Mono', monospace;
     }
 
-    /* ── Dropdown links ── */
-    .dropdown-wrap { position: relative; }
-    .dropdown-btn {
-      font-size: 12px;
-      padding: 5px 12px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text-2);
-      cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      transition: all 0.12s;
-      white-space: nowrap;
-    }
-    .dropdown-btn:hover { border-color: var(--border-hover); color: var(--text); }
-    .dropdown-menu {
-      position: absolute;
-      right: 0;
-      top: calc(100% + 6px);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-      min-width: 200px;
-      z-index: 50;
+    /* ── Card Links (Expandable) ── */
+    .card-links {
+      max-height: 0;
       overflow: hidden;
-      display: none;
+      opacity: 0;
+      transition: max-height 0.3s ease, opacity 0.3s ease;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
     }
-    .dropdown-menu.open { display: block; }
-    .dropdown-item {
+    .card.expanded .card-links {
+      max-height: 500px;
+      opacity: 1;
+    }
+    .link-item {
       display: flex;
       align-items: center;
       gap: 9px;
-      padding: 10px 14px;
+      padding: 12px 16px;
       font-size: 13px;
       color: var(--text);
       text-decoration: none;
       transition: background 0.1s;
       border-bottom: 1px solid var(--border);
     }
-    .dropdown-item:last-child { border-bottom: none; }
-    .dropdown-item:hover { background: var(--bg); }
-    .dropdown-item-icon {
+    .link-item:last-child { border-bottom: none; }
+    .link-item:hover { background: var(--surface); }
+    .link-item-icon {
       width: 22px;
       height: 22px;
       border-radius: 4px;
@@ -373,7 +359,10 @@
       font-size: 12px;
       flex-shrink: 0;
     }
-    .dropdown-item-meta { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+    .link-item-label {
+      font-weight: 500;
+    }
+    .link-item-meta { font-size: 11px; color: var(--text-3); margin-top: 2px; }
 
     /* ── States ── */
     .status-bar {
