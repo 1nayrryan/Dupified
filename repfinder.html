@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rep Finder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-dot"></div>
+      Rep Finder
+    </div>
+    <span class="header-sub">replica shoe search</span>
+  </div>
+</header>
+
+<main>
+  <!-- Config note -->
+  <div class="config-note">
+    <strong>Setup:</strong> Replace <code>YOUR_API_KEY</code> and <code>YOUR_CX_ID</code> at the top of the <code>&lt;script&gt;</code> to go live.
+    Get keys at <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> (Custom Search API) and
+    <a href="https://programmablesearchengine.google.com" target="_blank">programmablesearchengine.google.com</a>. Free tier = 100 searches/day.
+    Running without keys shows demo results.
+  </div>
+
+  <!-- Search -->
+  <div class="search-section">
+    <div class="search-label">Search</div>
+    <div class="search-row">
+      <input class="search-input" id="query" type="text" placeholder="e.g. Nike Dunk Low Panda rep, Yeezy 350 V2…" />
+      <button class="search-btn" id="searchBtn" onclick="doSearch()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        Search
+      </button>
+    </div>
+    <div class="pills" id="pills"></div>
+  </div>
+
+  <!-- Status -->
+  <div class="status-bar" id="status"></div>
+  <div id="error"></div>
+
+  <!-- Toolbar -->
+  <div class="toolbar" id="toolbar" style="display:none">
+    <div class="result-count" id="resultCount"></div>
+    <div class="filter-row">
+      <span class="filter-label">Platform:</span>
+      <div id="platformFilters"></div>
+      <span class="filter-label" style="margin-left:8px">Sort:</span>
+      <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+        <option value="default">Relevance</option>
+        <option value="price-asc">Price: Low → High</option>
+        <option value="price-desc">Price: High → Low</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-grid" id="results"></div>
+</main>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────
+const GOOGLE_API_KEY = "YOUR_API_KEY";
+const GOOGLE_CX      = "YOUR_CX_ID";
+// ────────────────────────────────────────────────────────
+
+const DEMO_MODE = GOOGLE_API_KEY === "YOUR_API_KEY";
+
+const POPULAR_SEARCHES = [
+  "Jordan 1 Bred rep", "Yeezy 350 V2 rep", "Nike Dunk Low Panda rep",
+  "New Balance 550 rep", "Air Force 1 rep", "Travis Scott Jordan rep",
+  "Samba OG rep", "Nike TN rep"
+];
+
+const PLATFORM_ICONS = {
+  "DHgate":   "🛒",
+  "Reddit":   "💬",
+  "Superbuy": "📦",
+  "Wegobuy":  "📦",
+  "Weidian":  "🏪",
+  "Taobao":   "🏪",
+  "AliExpress":"🛍️",
+  "Web":      "🌐"
+};
+
+// Mock data for demo mode
+const MOCK_DATA = [
+  { title: "Nike Air Jordan 1 Bred — Best Batches & Buying Guide 2024", link: "https://dhgate.com/store/rep-jordans", displayLink: "dhgate.com", snippet: "Top-rated replica Jordan 1 Bred from verified sellers. QC photos, shipping times, and batch reviews. Multiple quality tiers available.", platform: "DHgate", price: 45, image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&q=80" },
+  { title: "Best Jordan 1 Bred Reps 2024 — r/Repsneakers Community Guide", link: "https://reddit.com/r/repsneakers/best-j1-bred", displayLink: "reddit.com", snippet: "Community-reviewed batches for the Jordan 1 Bred. PK God and H12 batches rated highest. Price range $35–$75 depending on quality tier.", platform: "Reddit", price: 55, image: "https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=300&q=80" },
+  { title: "Jordan 1 Bred PK God Batch — Weidian Haul Review", link: "https://superbuy.com/en/page/buy", displayLink: "superbuy.com", snippet: "Full QC photo set. Leather texture accurate, stitching clean. Ships via Superbuy agent. Includes box and tag. Highly recommended seller.", platform: "Superbuy", price: 62, image: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=300&q=80" },
+  { title: "Jordan 1 Bred H12 Factory — AliExpress Verified Seller", link: "https://aliexpress.com/item/jordan-bred", displayLink: "aliexpress.com", snippet: "H12 factory batch with near-retail accuracy. Fast shipping option available. 4.9 star rating from 2,300+ buyers.", platform: "AliExpress", price: 38, image: "https://images.unsplash.com/photo-1584735175315-9d5df23860e6?w=300&q=80" },
+  { title: "Yeezy 350 V2 Rep — Best Batches Ranked by Quality", link: "https://reddit.com/r/repsneakers/yeezy350", displayLink: "reddit.com", snippet: "PK God, OG, and UA batches compared. Boost sole accuracy, primeknit texture grades. W2C links and current pricing included.", platform: "Reddit", price: 50, image: "https://images.unsplash.com/photo-1556906781-9a412961a28d?w=300&q=80" },
+  { title: "Nike Dunk Low Panda Rep — DHgate Top Seller Roundup", link: "https://dhgate.com/store/dunk-panda", displayLink: "dhgate.com", snippet: "Multiple sellers compared for the Dunk Low Panda. Best value at $40–$55 range. Ships from China, 12–20 day delivery estimate.", platform: "DHgate", price: 42, image: "https://images.unsplash.com/photo-1597045566677-8cf032ed6634?w=300&q=80" },
+];
+
+let allResults = [];
+let activeFilters = new Set();
+
+// ── Init ──────────────────────────────────────────────
+function initPills() {
+  document.getElementById("pills").innerHTML = POPULAR_SEARCHES
+    .map(p => `<button class="pill" onclick="setQuery('${p}')">${p}</button>`)
+    .join("");
+}
+
+function setQuery(val) {
+  document.getElementById("query").value = val;
+  doSearch();
+}
+
+// ── Search ────────────────────────────────────────────
+async function doSearch() {
+  const q = document.getElementById("query").value.trim();
+  if (!q) return;
+
+  const btn = document.getElementById("searchBtn");
+  const statusEl = document.getElementById("status");
+  const errorEl = document.getElementById("error");
+  const toolbarEl = document.getElementById("toolbar");
+
+  btn.disabled = true;
+  errorEl.innerHTML = "";
+  toolbarEl.style.display = "none";
+  document.getElementById("results").innerHTML = "";
+  activeFilters.clear();
+  statusEl.innerHTML = `<div class="spinner"></div> Searching for <strong>${q}</strong>…`;
+
+  if (DEMO_MODE) {
+    await new Promise(r => setTimeout(r, 900));
+    allResults = MOCK_DATA.map(r => ({
+      ...r,
+      title: r.title.replace(/Jordan 1 Bred|Yeezy 350 V2|Nike Dunk Low Panda/g, q.replace(/ rep$/, ""))
+    }));
+    finishSearch(q);
+    btn.disabled = false;
+    return;
+  }
+
+  try {
+    const query = encodeURIComponent(`${q} buy site:dhgate.com OR site:reddit.com OR site:superbuy.com OR site:wegobuy.com OR site:aliexpress.com`);
+    const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${query}&num=8&searchType=`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Google API returned ${res.status}`);
+    const data = await res.json();
+
+    allResults = (data.items || []).map(item => ({
+      title: item.title,
+      link: item.link,
+      displayLink: item.displayLink,
+      snippet: item.snippet,
+      platform: getPlatform(item.link),
+      price: extractPrice(item.snippet),
+      image: item.pagemap?.cse_image?.[0]?.src || item.pagemap?.metatags?.[0]?.["og:image"] || null
+    }));
+
+    if (!allResults.length) {
+      statusEl.textContent = `No results found for "${q}"`;
+      btn.disabled = false;
+      return;
+    }
+
+    finishSearch(q);
+  } catch (err) {
+    errorEl.innerHTML = `<div class="error-box">⚠ Search failed: ${err.message}. Check your API key and CX ID in the script config.</div>`;
+    statusEl.textContent = "";
+  }
+
+  btn.disabled = false;
+}
+
+function finishSearch(q) {
+  const statusEl = document.getElementById("status");
+  statusEl.textContent = DEMO_MODE ? `${allResults.length} results for "${q}" (demo mode)` : `${allResults.length} results`;
+  buildPlatformFilters();
+  applyFilters();
+  document.getElementById("toolbar").style.display = "flex";
+}
+
+// ── Filters & Sort ────────────────────────────────────
+function buildPlatformFilters() {
+  const platforms = [...new Set(allResults.map(r => r.platform))];
+  const wrap = document.getElementById("platformFilters");
+  wrap.innerHTML = platforms.map(p =>
+    `<button class="filter-btn" data-platform="${p}" onclick="toggleFilter('${p}')">${p}</button>`
+  ).join("");
+}
+
+function toggleFilter(platform) {
+  if (activeFilters.has(platform)) activeFilters.delete(platform);
+  else activeFilters.add(platform);
+  document.querySelectorAll(".filter-btn").forEach(btn => {
+    btn.classList.toggle("active", activeFilters.has(btn.dataset.platform));
+  });
+  applyFilters();
+}
+
+function applyFilters() {
+  let filtered = activeFilters.size > 0
+    ? allResults.filter(r => activeFilters.has(r.platform))
+    : allResults;
+
+  const sort = document.getElementById("sortSelect").value;
+  if (sort === "price-asc") filtered = [...filtered].sort((a, b) => (a.price || 999) - (b.price || 999));
+  if (sort === "price-desc") filtered = [...filtered].sort((a, b) => (b.price || 0) - (a.price || 0));
+
+  document.getElementById("resultCount").textContent = `${filtered.length} result${filtered.length !== 1 ? "s" : ""}`;
+  renderCards(filtered);
+}
+
+// ── Cards ─────────────────────────────────────────────
+function renderCards(items) {
+  if (!items.length) {
+    document.getElementById("results").innerHTML = `
+      <div class="empty-state">
+        <div class="big">👟</div>
+        <p>No results match your filters.</p>
+      </div>`;
+    return;
+  }
+
+  document.getElementById("results").innerHTML = items.map((item, i) => {
+    const links = getDropdownLinks(item);
+    const priceHTML = item.price
+      ? `<span class="price-tag">~$${item.price}</span>`
+      : `<span class="price-tag no-price">Price unknown</span>`;
+
+    const thumbHTML = item.image
+      ? `<img src="${item.image}" alt="" onerror="this.parentElement.innerHTML='<div class=\\"thumb-placeholder\\">👟</div>'" />`
+      : `<div class="thumb-placeholder">👟</div>`;
+
+    return `
+      <div class="card" style="animation-delay:${i * 0.05}s">
+        <div class="card-main">
+          <div class="card-thumb">${thumbHTML}</div>
+          <div class="card-body">
+            <div class="card-header">
+              <div class="card-title">${item.title}</div>
+              ${priceHTML}
+            </div>
+            <div class="card-snippet">${item.snippet}</div>
+            <div class="card-footer">
+              <span class="platform-tag">${PLATFORM_ICONS[item.platform] || "🌐"} ${item.platform}</span>
+              <div class="dropdown-wrap" id="dd-wrap-${i}">
+                <button class="dropdown-btn" onclick="toggleDropdown(${i})">
+                  Links
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </button>
+                <div class="dropdown-menu" id="dd-${i}">
+                  ${links.map(l => `
+                    <a href="${l.url}" target="_blank" rel="noopener" class="dropdown-item">
+                      <div class="dropdown-item-icon">${l.icon}</div>
+                      <div>
+                        <div>${l.label}</div>
+                        <div class="dropdown-item-meta">${l.meta}</div>
+                      </div>
+                    </a>`).join("")}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+// ── Dropdown links per result ─────────────────────────
+function getDropdownLinks(item) {
+  const q = encodeURIComponent(document.getElementById("query").value.trim());
+  const links = [
+    { url: item.link, label: "View listing", meta: item.displayLink, icon: "🔗" }
+  ];
+
+  if (item.platform === "DHgate" || item.platform === "AliExpress") {
+    links.push({ url: `https://superbuy.com/en/page/buy/?url=${encodeURIComponent(item.link)}`, label: "Buy via Superbuy agent", meta: "Agent forwarding", icon: "📦" });
+    links.push({ url: `https://www.wegobuy.com/en/page/buy/?url=${encodeURIComponent(item.link)}`, label: "Buy via Wegobuy agent", meta: "Agent forwarding", icon: "📦" });
+  }
+
+  links.push({ url: `https://www.reddit.com/r/repsneakers/search/?q=${q}`, label: "Search r/Repsneakers", meta: "Community reviews", icon: "💬" });
+  links.push({ url: `https://dhgate.com/wholesale/search.do?searchkey=${q}`, label: "Search DHgate", meta: "Direct listings", icon: "🛒" });
+
+  return links;
+}
+
+// ── Helpers ───────────────────────────────────────────
+function getPlatform(url) {
+  if (!url) return "Web";
+  if (url.includes("dhgate")) return "DHgate";
+  if (url.includes("reddit")) return "Reddit";
+  if (url.includes("superbuy")) return "Superbuy";
+  if (url.includes("wegobuy")) return "Wegobuy";
+  if (url.includes("weidian")) return "Weidian";
+  if (url.includes("taobao")) return "Taobao";
+  if (url.includes("aliexpress")) return "AliExpress";
+  try { return new URL(url).hostname.replace("www.", ""); } catch { return "Web"; }
+}
+
+function extractPrice(snippet) {
+  if (!snippet) return null;
+  const match = snippet.match(/\$(\d{1,3})(?:\.\d{2})?/);
+  return match ? parseInt(match[1]) : null;
+}
+
+function toggleDropdown(i) {
+  document.querySelectorAll(".dropdown-menu").forEach((el, idx) => {
+    if (idx !== i) el.classList.remove("open");
+  });
+  document.getElementById(`dd-${i}`).classList.toggle("open");
+}
+
+document.addEventListener("click", e => {
+  if (!e.target.closest(".dropdown-wrap")) {
+    document.querySelectorAll(".dropdown-menu").forEach(el => el.classList.remove("open"));
+  }
+});
+
+document.getElementById("query").addEventListener("keydown", e => {
+  if (e.key === "Enter") doSearch();
+});
+
+initPills();
+</script>
+</body>
+</html>
