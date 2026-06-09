@@ -465,3 +465,92 @@
     .dropdown-item-icon {
       margin-right: 8px;
     }
+
+    /* Style for the dropdown menu */
+.dropdown-menu {
+  display: none; /* Hidden by default */
+  position: absolute; /* Position relative to the parent */
+  background: #ffffff; /* White background */
+  border: 1px solid #ddd; /* Light gray border */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  z-index: 1000; /* Ensure it appears above other elements */
+  padding: 8px 0; /* Add some padding */
+  border-radius: 6px; /* Rounded corners */
+  min-width: 200px; /* Minimum width for better visibility */
+}
+
+/* Show the dropdown when the "open" class is added */
+.dropdown-menu.open {
+  display: block;
+}
+
+/* Style for individual dropdown items */
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: #333; /* Dark text */
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+/* Highlight dropdown items on hover */
+.dropdown-item:hover {
+  background: #f0f0f0; /* Light gray background on hover */
+}
+
+/* Style for the dropdown item icon */
+.dropdown-item-icon {
+  margin-right: 8px;
+  font-size: 16px; /* Slightly larger icon */
+}
+
+.dropdown-wrap {
+  position: relative; /* Parent container for positioning */
+}
+
+.dropdown-menu {
+  top: 100%; /* Position below the button */
+  left: 0; /* Align with the left edge of the button */
+  margin-top: 4px; /* Add some space between the button and the menu */
+}
+
+.dropdown-btn {
+  background: #f9f9f9; /* Light gray background */
+  border: 1px solid #ddd; /* Light gray border */
+  border-radius: 4px; /* Rounded corners */
+  padding: 4px 8px; /* Add some padding */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px; /* Space between text and icon */
+}
+
+.dropdown-btn:hover {
+  background: #f0f0f0; /* Slightly darker background on hover */
+}
+
+.dropdown-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #007bff; /* Blue focus ring */
+}
+
+.dropdown-btn.active {
+  background: #e0e0e0; /* Darker background when active */
+}
+
+.dropdown-menu {
+  z-index: 1000; /* Ensure it appears above other elements */
+}
+
+.dropdown-menu {
+  opacity: 0;
+  transform: translateY(-10px); /* Start slightly above */
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.dropdown-menu.open {
+  opacity: 1;
+  transform: translateY(0); /* Slide into place */
+}
