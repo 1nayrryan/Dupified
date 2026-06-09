@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rep Finder</title>
+  <title>Dupeify</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -14,7 +14,7 @@
   <div class="header-inner">
     <div class="logo">
       <div class="logo-dot"></div>
-      Rep Finder
+      Dupeify
     </div>
     <span class="header-sub">replica shoe search</span>
   </div>
@@ -23,10 +23,8 @@
 <main>
   <!-- Config note -->
   <div class="config-note">
-    <strong>Setup:</strong> Replace <code>YOUR_API_KEY</code> and <code>YOUR_CX_ID</code> at the top of the <code>&lt;script&gt;</code> to go live.
-    Get keys at <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> (Custom Search API) and
-    <a href="https://programmablesearchengine.google.com" target="_blank">programmablesearchengine.google.com</a>. Free tier = 100 searches/day.
-    Running without keys shows demo results.
+    <strong>Setup:</strong> Backend running at <code>http://localhost:5000</code>. To deploy to production, update <code>BACKEND_URL</code> in the script.
+    The backend fetches from Reddit r/repsneakers and provides direct links to DHgate, AliExpress, Weidian, and Taobao.
   </div>
 
   <!-- Search -->
@@ -69,11 +67,11 @@
 
 <script>
 // ── CONFIG ──────────────────────────────────────────────
-const GOOGLE_API_KEY = "YOUR_API_KEY";
-const GOOGLE_CX      = "YOUR_CX_ID";
+// Backend endpoint (change to your deployed URL in production)
+const BACKEND_URL = "http://localhost:5000";
 // ────────────────────────────────────────────────────────
 
-const DEMO_MODE = GOOGLE_API_KEY === "YOUR_API_KEY";
+const DEMO_MODE = false;
 
 const POPULAR_SEARCHES = [
   "Jordan 1 Bred rep", "Yeezy 350 V2 rep", "Nike Dunk Low Panda rep",
@@ -146,10 +144,9 @@ async function doSearch() {
   }
 
   try {
-    const query = encodeURIComponent(`${q} buy site:dhgate.com OR site:reddit.com OR site:superbuy.com OR site:wegobuy.com OR site:aliexpress.com`);
-    const url = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${GOOGLE_CX}&q=${query}&num=8&searchType=`;
+    const url = `${BACKEND_URL}/api/search?q=${encodeURIComponent(q)}`;
     const res = await fetch(url);
-    if (!res.ok) throw new Error(`Google API returned ${res.status}`);
+    if (!res.ok) throw new Error(`Backend returned ${res.status}`);
     const data = await res.json();
 
     allResults = (data.items || []).map(item => ({
@@ -157,9 +154,9 @@ async function doSearch() {
       link: item.link,
       displayLink: item.displayLink,
       snippet: item.snippet,
-      platform: getPlatform(item.link),
-      price: extractPrice(item.snippet),
-      image: item.pagemap?.cse_image?.[0]?.src || item.pagemap?.metatags?.[0]?.["og:image"] || null
+      platform: item.platform || getPlatform(item.link),
+      price: item.price || extractPrice(item.snippet),
+      image: item.image || null
     }));
 
     if (!allResults.length) {
@@ -170,7 +167,7 @@ async function doSearch() {
 
     finishSearch(q);
   } catch (err) {
-    errorEl.innerHTML = `<div class="error-box">⚠ Search failed: ${err.message}. Check your API key and CX ID in the script config.</div>`;
+    errorEl.innerHTML = `<div class="error-box">⚠ Search failed: ${err.message}. Make sure the backend is running at ${BACKEND_URL}.</div>`;
     statusEl.textContent = "";
   }
 
@@ -190,7 +187,8 @@ function buildPlatformFilters() {
   const platforms = [...new Set(allResults.map(r => r.platform))];
   const wrap = document.getElementById("platformFilters");
   wrap.innerHTML = platforms.map(p =>
-    `<button class="filter-btn" data-platform="${p}" onclick="toggleFilter('${p}')">${p}</button>`
+    `<button class="filter-btn" data-platform="${p}" onclick="toggleFilter('${p}')">${p}
+    </button>`
   ).join("");
 }
 
