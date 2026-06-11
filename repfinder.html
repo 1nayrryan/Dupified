@@ -24,7 +24,7 @@
   <!-- Config note -->
   <div class="config-note">
     <strong>Setup:</strong> Backend running at <code>http://localhost:5000</code>. To deploy to production, update <code>BACKEND_URL</code> in the script.
-    The backend fetches from Reddit r/repsneakers and provides direct links to DHgate, AliExpress, Weidian, and Taobao.
+    The backend fetches from Reddit r/repsneakers and provides direct links to DHgate, AliExpress, Weidian, Taobao, and PandaVault.
   </div>
 
   <!-- Search -->
@@ -67,7 +67,6 @@
 
 <script>
 // ── CONFIG ──────────────────────────────────────────────
-// Backend endpoint (change to your deployed URL in production)
 const BACKEND_URL = "http://localhost:5000";
 // ────────────────────────────────────────────────────────
 
@@ -80,24 +79,25 @@ const POPULAR_SEARCHES = [
 ];
 
 const PLATFORM_ICONS = {
-  "DHgate":   "🛒",
-  "Reddit":   "💬",
-  "Superbuy": "📦",
-  "Wegobuy":  "📦",
-  "Weidian":  "🏪",
-  "Taobao":   "🏪",
+  "DHgate":    "🛒",
+  "Reddit":    "💬",
+  "Superbuy":  "📦",
+  "Wegobuy":   "📦",
+  "Weidian":   "🏪",
+  "Taobao":    "🏪",
   "AliExpress":"🛍️",
-  "Web":      "🌐"
+  "PandaVault":"🐼",
+  "Web":       "🌐"
 };
 
 // Mock data for demo mode
 const MOCK_DATA = [
-  { title: "Nike Air Jordan 1 Bred — Best Batches & Buying Guide 2024", link: "https://dhgate.com/store/rep-jordans", displayLink: "dhgate.com", snippet: "Top-rated replica Jordan 1 Bred from verified sellers. QC photos, shipping times, and batch reviews. Multiple quality tiers available.", platform: "DHgate", price: 45, image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&q=80" },
-  { title: "Best Jordan 1 Bred Reps 2024 — r/Repsneakers Community Guide", link: "https://reddit.com/r/repsneakers/best-j1-bred", displayLink: "reddit.com", snippet: "Community-reviewed batches for the Jordan 1 Bred. PK God and H12 batches rated highest. Price range $35–$75 depending on quality tier.", platform: "Reddit", price: 55, image: "https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=300&q=80" },
-  { title: "Jordan 1 Bred PK God Batch — Weidian Haul Review", link: "https://superbuy.com/en/page/buy", displayLink: "superbuy.com", snippet: "Full QC photo set. Leather texture accurate, stitching clean. Ships via Superbuy agent. Includes box and tag. Highly recommended seller.", platform: "Superbuy", price: 62, image: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=300&q=80" },
-  { title: "Jordan 1 Bred H12 Factory — AliExpress Verified Seller", link: "https://aliexpress.com/item/jordan-bred", displayLink: "aliexpress.com", snippet: "H12 factory batch with near-retail accuracy. Fast shipping option available. 4.9 star rating from 2,300+ buyers.", platform: "AliExpress", price: 38, image: "https://images.unsplash.com/photo-1584735175315-9d5df23860e6?w=300&q=80" },
-  { title: "Yeezy 350 V2 Rep — Best Batches Ranked by Quality", link: "https://reddit.com/r/repsneakers/yeezy350", displayLink: "reddit.com", snippet: "PK God, OG, and UA batches compared. Boost sole accuracy, primeknit texture grades. W2C links and current pricing included.", platform: "Reddit", price: 50, image: "https://images.unsplash.com/photo-1556906781-9a412961a28d?w=300&q=80" },
-  { title: "Nike Dunk Low Panda Rep — DHgate Top Seller Roundup", link: "https://dhgate.com/store/dunk-panda", displayLink: "dhgate.com", snippet: "Multiple sellers compared for the Dunk Low Panda. Best value at $40–$55 range. Ships from China, 12–20 day delivery estimate.", platform: "DHgate", price: 42, image: "https://images.unsplash.com/photo-1597045566677-8cf032ed6634?w=300&q=80" },
+  { title: "Nike Air Jordan 1 Bred — Best Batches & Buying Guide 2024", link: "https://dhgate.com/store/rep-jordans", displayLink: "dhgate.com", snippet: "Top-rated replica Jordan 1 Bred from verified sellers. QC photos, shipping times, and batch reviews. Multiple quality tiers available.", platform: "DHgate", price: 45, image: null },
+  { title: "Best Jordan 1 Bred Reps 2024 — r/Repsneakers Community Guide", link: "https://reddit.com/r/repsneakers/best-j1-bred", displayLink: "reddit.com", snippet: "Community-reviewed batches for the Jordan 1 Bred. PK God and H12 batches rated highest. Price range $35–$75 depending on quality tier.", platform: "Reddit", price: 55, image: null },
+  { title: "Jordan 1 Bred PK God Batch — Weidian Haul Review", link: "https://superbuy.com/en/page/buy", displayLink: "superbuy.com", snippet: "Full QC photo set. Leather texture accurate, stitching clean. Ships via Superbuy agent. Includes box and tag. Highly recommended seller.", platform: "Superbuy", price: 62, image: null },
+  { title: "Jordan 1 Bred H12 Factory — AliExpress Verified Seller", link: "https://aliexpress.com/item/jordan-bred", displayLink: "aliexpress.com", snippet: "H12 factory batch with near-retail accuracy. Fast shipping option available. 4.9 star rating from 2,300+ buyers.", platform: "AliExpress", price: 38, image: null },
+  { title: "Yeezy 350 V2 — PandaVault Batch Guide", link: "https://pandavault.x.yupoo.com/search/album?uid=1&sort=&q=yeezy+350+v2", displayLink: "https://pandavault.x.yupoo.com/categories", snippet: "PandaVault batch comparison guide. QC photos, W2C links, and community ratings for Yeezy 350 V2 replicas.", platform: "PandaVault", price: 55, image: null },
+  { title: "Nike Dunk Low Panda Rep — DHgate Top Seller Roundup", link: "https://dhgate.com/store/dunk-panda", displayLink: "dhgate.com", snippet: "Multiple sellers compared for the Dunk Low Panda. Best value at $40–$55 range. Ships from China, 12–20 day delivery estimate.", platform: "DHgate", price: 42, image: null },
 ];
 
 let allResults = [];
@@ -136,7 +136,7 @@ async function doSearch() {
     await new Promise(r => setTimeout(r, 900));
     allResults = MOCK_DATA.map(r => ({
       ...r,
-      title: r.title.replace(/Jordan 1 Bred|Yeezy 350 V2|Nike Dunk Low Panda/g, q.replace(/ rep$/, ""))
+      title: r.title.replace(/Jordan 1 Bred|Yeezy 350 V2|Nike Dunk Low Panda/g, q.replace(/ rep$/i, ""))
     }));
     finishSearch(q);
     btn.disabled = false;
@@ -156,7 +156,7 @@ async function doSearch() {
       snippet: item.snippet,
       platform: item.platform || getPlatform(item.link),
       price: item.price || extractPrice(item.snippet),
-      image: item.image || null
+      image: item.image || null,
     }));
 
     if (!allResults.length) {
@@ -176,7 +176,9 @@ async function doSearch() {
 
 function finishSearch(q) {
   const statusEl = document.getElementById("status");
-  statusEl.textContent = DEMO_MODE ? `${allResults.length} results for "${q}" (demo mode)` : `${allResults.length} results`;
+  statusEl.textContent = DEMO_MODE
+    ? `${allResults.length} results for "${q}" (demo mode)`
+    : `${allResults.length} results`;
   buildPlatformFilters();
   applyFilters();
   document.getElementById("toolbar").style.display = "flex";
@@ -184,10 +186,10 @@ function finishSearch(q) {
 
 // ── Calculate average price ───────────────────────────
 function getAveragePrice(results) {
-  const pricesWithValues = results.filter(r => r.price && typeof r.price === 'number');
-  if (!pricesWithValues.length) return null;
-  const sum = pricesWithValues.reduce((acc, r) => acc + r.price, 0);
-  return Math.round(sum / pricesWithValues.length);
+  const withPrice = results.filter(r => r.price && typeof r.price === 'number');
+  if (!withPrice.length) return null;
+  const sum = withPrice.reduce((acc, r) => acc + r.price, 0);
+  return Math.round(sum / withPrice.length);
 }
 
 // ── Filters & Sort ────────────────────────────────────
@@ -195,8 +197,7 @@ function buildPlatformFilters() {
   const platforms = [...new Set(allResults.map(r => r.platform))];
   const wrap = document.getElementById("platformFilters");
   wrap.innerHTML = platforms.map(p =>
-    `<button class="filter-btn" data-platform="${p}" onclick="toggleFilter('${p}')">${p}
-    </button>`
+    `<button class="filter-btn" data-platform="${p}" onclick="toggleFilter('${p}')">${p}</button>`
   ).join("");
 }
 
@@ -218,7 +219,8 @@ function applyFilters() {
   if (sort === "price-asc") filtered = [...filtered].sort((a, b) => (a.price || 999) - (b.price || 999));
   if (sort === "price-desc") filtered = [...filtered].sort((a, b) => (b.price || 0) - (a.price || 0));
 
-  document.getElementById("resultCount").textContent = `${filtered.length} result${filtered.length !== 1 ? "s" : ""}`;
+  document.getElementById("resultCount").textContent =
+    `${filtered.length} result${filtered.length !== 1 ? "s" : ""}`;
   renderCards(filtered);
 }
 
@@ -233,22 +235,19 @@ function renderCards(items) {
     return;
   }
 
-  // Calculate average price across all displayed results
   const avgPrice = getAveragePrice(items);
 
   document.getElementById("results").innerHTML = items.map((item, i) => {
     const links = getDropdownLinks(item);
-    
-    // Show average price for all items, or individual price if available
+
     const priceHTML = avgPrice
       ? `<span class="price-tag">avg ~$${avgPrice}</span>`
       : item.price
       ? `<span class="price-tag">~$${item.price}</span>`
       : `<span class="price-tag no-price">Price unknown</span>`;
 
-    const thumbHTML = item.image
-      ? `<img src="${item.image}" alt="" onerror="this.parentElement.innerHTML='<div class=\\"thumb-placeholder\\">👟</div>'" />`
-      : `<div class="thumb-placeholder">👟</div>`;
+    // Thumb: show image if backend provided one, otherwise shimmer placeholder
+    const thumbHTML = ''
 
     return `
       <div class="card" data-card-index="${i}" onclick="toggleCardExpand(${i}, event)">
@@ -286,34 +285,48 @@ function getDropdownLinks(item) {
     { url: item.link, label: "View listing", meta: item.displayLink, icon: "🔗" }
   ];
 
-  if (item.platform === "DHgate" || item.platform === "AliExpress") {
-    links.push({ url: `https://superbuy.com/en/page/buy/?url=${encodeURIComponent(item.link)}`, label: "Buy via Superbuy agent", meta: "Agent forwarding", icon: "📦" });
-    links.push({ url: `https://www.wegobuy.com/en/page/buy/?url=${encodeURIComponent(item.link)}`, label: "Buy via Wegobuy agent", meta: "Agent forwarding", icon: "📦" });
+  if (item.platform === "DHgate" || item.platform === "AliExpress" ||
+      item.platform === "Weidian" || item.platform === "Taobao") {
+    links.push({
+      url: `https://superbuy.com/en/page/buy/?url=${encodeURIComponent(item.link)}`,
+      label: "Buy via Superbuy agent", meta: "Agent forwarding", icon: "📦"
+    });
+    links.push({
+      url: `https://www.wegobuy.com/en/page/buy/?url=${encodeURIComponent(item.link)}`,
+      label: "Buy via Wegobuy agent", meta: "Agent forwarding", icon: "📦"
+    });
   }
 
-  links.push({ url: `https://www.reddit.com/r/repsneakers/search/?q=${q}`, label: "Search r/Repsneakers", meta: "Community reviews", icon: "💬" });
-  links.push({ url: `https://dhgate.com/wholesale/search.do?searchkey=${q}`, label: "Search DHgate", meta: "Direct listings", icon: "🛒" });
+  if (item.platform === "Reddit") {
+    links.push({
+      url: `https://www.reddit.com/r/repsneakers/search/?q=${q}`,
+      label: "Search r/Repsneakers", meta: "Community reviews", icon: "💬"
+    });
+  }
+
+  if (item.platform === "PandaVault") {
+    links.push({
+      url: `https://pandavault.x.yupoo.com/search/album?uid=1&sort=&q=${q}`,
+      label: "Search PandaVault", meta: "Batch reviews & W2C", icon: "🐼"
+    });
+  }
 
   return links;
 }
-
 // ── Card Expand/Collapse ─────────────────────────────
 let expandedCardIndex = null;
 
 function toggleCardExpand(i, event) {
-  // Don't expand if clicking a link
   if (event.target.closest('.link-item')) return;
-  
+
   const card = document.querySelector(`[data-card-index="${i}"]`);
   const isExpanded = card.classList.contains('expanded');
-  
-  // Close other expanded cards
+
   if (expandedCardIndex !== null && expandedCardIndex !== i) {
     const otherCard = document.querySelector(`[data-card-index="${expandedCardIndex}"]`);
     if (otherCard) otherCard.classList.remove('expanded');
   }
-  
-  // Toggle current card
+
   if (isExpanded) {
     card.classList.remove('expanded');
     expandedCardIndex = null;
@@ -324,22 +337,23 @@ function toggleCardExpand(i, event) {
 }
 
 document.addEventListener("click", e => {
-  // Close expanded card when clicking outside
   if (!e.target.closest(".card") && expandedCardIndex !== null) {
     const expandedCard = document.querySelector(`[data-card-index="${expandedCardIndex}"]`);
     if (expandedCard) expandedCard.classList.remove('expanded');
     expandedCardIndex = null;
   }
 });
+
 function getPlatform(url) {
   if (!url) return "Web";
-  if (url.includes("dhgate")) return "DHgate";
-  if (url.includes("reddit")) return "Reddit";
-  if (url.includes("superbuy")) return "Superbuy";
-  if (url.includes("wegobuy")) return "Wegobuy";
-  if (url.includes("weidian")) return "Weidian";
-  if (url.includes("taobao")) return "Taobao";
+  if (url.includes("dhgate"))     return "DHgate";
+  if (url.includes("reddit"))     return "Reddit";
+  if (url.includes("superbuy"))   return "Superbuy";
+  if (url.includes("wegobuy"))    return "Wegobuy";
+  if (url.includes("weidian"))    return "Weidian";
+  if (url.includes("taobao"))     return "Taobao";
   if (url.includes("aliexpress")) return "AliExpress";
+  if (url.includes("pandavault")) return "PandaVault";
   try { return new URL(url).hostname.replace("www.", ""); } catch { return "Web"; }
 }
 
