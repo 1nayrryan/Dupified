@@ -152,6 +152,20 @@
       background: var(--tag-bg);
     }
 
+    .header-note {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 30vh; /* or remove this line entirely */
+      text-align: center;
+      padding: 2rem 2rem 0 2rem; /* top right bottom left — bottom is now 0 */
+    }
+    
+    .header-note * {
+      font-size: 2.5rem;
+      line-height: 1.8;
+    }
+
     /* ── Toolbar ── */
     .toolbar {
       display: flex;
