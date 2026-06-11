@@ -13,10 +13,13 @@
 <header>
   <div class="header-inner">
     <div class="logo">
-      <div class="logo-dot"></div>
-      Dupeify
+  <div class="logo-dot"></div>
+  <a href="repfinder.html">Dupeify</a>
+</div>
+    <div style="display:flex;align-items:center;gap:18px;">
+      <span class="header-sub">replica shoe search</span>
+      <a href="about.html" class="header-nav-link">About</a>
     </div>
-    <span class="header-sub">replica shoe search</span>
   </div>
 </header>
 
@@ -367,6 +370,47 @@ document.getElementById("query").addEventListener("keydown", e => {
 });
 
 initPills();
+
+// ── Theme Picker ──────────────────────────────────────
+const THEMES = [
+  { name: "Default", bg: "#f7f6f3", surface: "#ffffff", dark: false },
+  { name: "Sky",     bg: "#ddeeff", surface: "#f0f8ff", dark: false },
+  { name: "Rose",    bg: "#fde8ec", surface: "#fff5f7", dark: false },
+  { name: "Lemon",   bg: "#fdf6d3", surface: "#fffdf0", dark: false },
+  { name: "Blush",   bg: "#fce4f0", surface: "#fff4fa", dark: false },
+  { name: "Mint",    bg: "#d9f2e6", surface: "#f0fbf5", dark: false },
+  { name: "Dark",    bg: "#1c1c1e", surface: "#2c2c2e", dark: true  },
+];
+
+function initThemePicker() {
+  const picker = document.createElement("div");
+  picker.className = "theme-picker";
+  picker.innerHTML = `
+    <span class="theme-picker-label">theme</span>
+    <div class="theme-swatches">
+      ${THEMES.map((t, i) => `
+        <button
+          class="theme-swatch${i === 0 ? ' active' : ''}${t.dark ? ' dark-swatch' : ''}"
+          title="${t.name}"
+          style="background:${t.bg}"
+          onclick="applyTheme(${i}, this)"
+        ></button>
+      `).join("")}
+    </div>
+  `;
+  document.body.appendChild(picker);
+}
+
+function applyTheme(index, el) {
+  const t = THEMES[index];
+  document.documentElement.style.setProperty("--bg", t.bg);
+  document.documentElement.style.setProperty("--surface", t.surface);
+  document.body.classList.toggle("dark-mode", t.dark);
+  document.querySelectorAll(".theme-swatch").forEach(s => s.classList.remove("active"));
+  el.classList.add("active");
+}
+
+initThemePicker();
 </script>
 </body>
 </html>
